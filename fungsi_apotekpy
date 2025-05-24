@@ -1,0 +1,208 @@
+
+from tabulate import tabulate
+import pandas as pd
+import csv
+import os
+
+def clear_terminal():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def pembukaan():
+    print("=" * 82)
+    greeting = "SELAMAT DATANG"
+    greeting_2 = "SISTEM INFORMASI PENGELOLAAN DATA OBAT APOTEK"
+    greeting = greeting.center(82)
+    greeting_2 = greeting_2.center(82)
+    print(greeting)
+    print(greeting_2)
+    print("=" * 82)
+
+def tambah_obat():
+    rows = []
+    header = ['Kode Obat', 'Nama Obat', 'Kategori', 'Stok', 'Harga', 'Kadaluarsa']
+    try:
+        with open('database_apotek.csv', mode='r', newline='') as file:
+            reader = csv.DictReader(file)
+            rows = list(reader)
+
+        ambil_kode = [row['Kode Obat'] for row in rows]
+
+        print("====== TAMBAH DATA OBAT ======")
+        kode = input("Input Kode Obat\t\t: ").upper()
+        if kode in ambil_kode:
+            print('='*80)
+            print(f'Kode Obat {kode} sudah digunakan!'.center(80))
+            print('='*80)
+            return
+        
+        nama = input("Input Nama Obat\t\t: ")
+        kategori = input("Input Kategori Obat\t: ")
+        stok = input("Input Stok Obat\t\t: ")
+        harga = input("Input Harga Obat\t: ")
+        kadaluarsa = input("Input Tanggal Kadaluarsa (YYYY-MM-DD): ")
+        clear_terminal()
+
+        data_obat = f'Kode Obat\t: {kode}\nNama Obat\t: {nama}\nKategori\t: {kategori}\nStok\t\t: {stok}\nHarga\t\t: {harga}\nKadaluarsa\t: {kadaluarsa}'
+        print("="*80)
+        print("Data Obat".center(80))
+        print("="*80)
+        print(data_obat)
+        print("="*80)
+        print('[1] Simpan Data Obat\n[2] Batalkan')
+        pil = input('Input Pilihan : ')
+        clear_terminal()
+
+        if pil == '1':
+            rows.append({
+                'Kode Obat': kode,
+                'Nama Obat': nama,
+                'Kategori': kategori,
+                'Stok': stok,
+                'Harga': harga,
+                'Kadaluarsa': kadaluarsa
+            })
+            rows.sort(key=lambda row: row['Kode Obat'])
+
+            with open('database_apotek.csv', mode='w', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames=header)
+                writer.writeheader()
+                writer.writerows(rows)
+
+            print("=" * 90)
+            print(f"Obat {nama} berhasil ditambahkan!".center(90))
+            print('=' * 90)
+        elif pil == '2':
+            print("="*80)
+            print("Batal menambahkan data obat!".center(80))
+            print("="*80)
+        else:
+            print("="*50)
+            print('Inputan Tidak Valid!'.center(50))
+            print("="*50)
+
+    except FileNotFoundError:
+        with open('database_apotek.csv', mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=header)
+            writer.writeheader()
+        print("File database_apotek.csv baru dibuat. Jalankan ulang fungsi tambah.")
+
+
+def tabel_obat():
+    df = pd.read_csv("database_apotek.csv")
+    data = []
+
+    for x in range (len(df)):
+        data_sementara = []
+        for y in range(len(df.columns)):
+            item = df.iloc[x,y]
+            data_sementara.append(str(item).upper())
+        data.append(data_sementara)
+    
+    Header = ['Kode Obat','Nama Obat','Kategori','Stok','Harga', 'Kadaluarsa']
+    frame = tabulate(data,headers=Header,tablefmt="fancy_grid")
+    print(frame)
+
+def update_obat(kode_obat):
+    try:
+        data = []
+        ditemukan = False
+        with open('database_apotek.csv', mode='r') as file:
+            reader = csv.DictReader(file)
+            header = reader.fieldnames
+            for row in reader:
+                if row['Kode Obat'] == kode_obat:
+                    ditemukan = True
+                    data_lama = row.copy()
+                data.append(row)
+
+        if not ditemukan:
+            print(f"Obat dengan kode {kode_obat} tidak ditemukan.")
+            return
+        
+        print("Pilih data yang ingin diubah:")
+        print("[1] Nama Obat\n[2] Kategori\n[3] Stok\n[4] Harga\n[5] Kadaluarsa")
+        pilihan = input("Masukkan pilihan: ")
+
+        field_map = {
+            '1': 'Nama Obat',
+            '2': 'Kategori',
+            '3': 'Stok',
+            '4': 'Harga',
+            '5': 'Kadaluarsa'
+        }
+
+        if pilihan in field_map:
+            field = field_map[pilihan]
+            new_value = input(f"Masukkan {field} baru: ")
+            for row in data:
+                if row['Kode Obat'] == kode_obat:
+                    row[field] = new_value
+            with open('database_apotek.csv', mode='w', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames=header)
+                writer.writeheader()
+                writer.writerows(data)
+            print(f"{field} pada Kode Obat {kode_obat} berhasil diubah.")
+        else:
+            print("Pilihan tidak valid.")
+
+    except Exception as e:
+        print("Terjadi kesalahan:", str(e))
+
+def hapus_obat(kode_obat):
+    try:
+        data = []
+        ditemukan = False
+        with open('database_apotek.csv', mode='r') as file:
+            reader = csv.DictReader(file)
+            header = reader.fieldnames
+            rows = list(reader)
+
+        for row in rows:
+            if row['Kode Obat'] == kode_obat:
+                ditemukan = True
+                konfirmasi = input(f"Yakin ingin menghapus data obat {row['Nama Obat']}? (y/n): ")
+                if konfirmasi.lower() == 'y':
+                    rows.remove(row)
+                    print(f"Data obat {kode_obat} berhasil dihapus.")
+                else:
+                    print("Penghapusan dibatalkan.")
+                break
+
+        if not ditemukan:
+            print(f"Obat dengan kode {kode_obat} tidak ditemukan.")
+        else:
+            with open('database_apotek.csv', mode='w', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames=header)
+                writer.writeheader()
+                writer.writerows(rows)
+
+    except Exception as e:
+        print("Terjadi kesalahan:", str(e))
+
+def menu_crud():
+    while True:
+        print("\n===== MENU CRUD OBAT =====")
+        print("[1] Tambah Obat")
+        print("[2] Tampilkan Semua Obat")
+        print("[3] Update Data Obat")
+        print("[4] Hapus Data Obat")
+        print("[5] Kembali / Keluar")
+        pilihan = input("Pilih menu: ")
+        clear_terminal()
+
+        if pilihan == '1':
+            tambah_obat()
+        elif pilihan == '2':
+            tabel_obat()
+        elif pilihan == '3':
+            kode = input("Masukkan Kode Obat yang akan diubah: ").upper()
+            update_obat(kode)
+        elif pilihan == '4':
+            kode = input("Masukkan Kode Obat yang akan dihapus: ").upper()
+            hapus_obat(kode)
+        elif pilihan == '5':
+            break
+        else:
+            print("Pilihan tidak valid.")
+
