@@ -1,5 +1,4 @@
 import fungsi_apotek as fs
-
 fs.clear_terminal()
 usn = "Admin"
 pin = "12345"
@@ -29,7 +28,6 @@ while True:
                                     case "2":
                                             fs.tabel_obat()
                                             input("\nTekan ENTER untuk kembali")
-
                                     case "3":
                                              kode = input("Masukkan Kode Obat yang akan diupdate: ").upper()
                                              fs.update_obat(kode)    
@@ -56,5 +54,4 @@ while True:
          print("\n")
          print("="*50)
          print("Username Tidak Valid!".center(50))
-         print("="*50)   
-
+         print("="*50)  
