@@ -1,4 +1,4 @@
-import fungsi as fs
+import fungsi_apotek as fs
 
 fs.clear_terminal()
 usn = "Admin"
