@@ -1,8 +1,10 @@
-UserID,Nomor Resi,Acara,Tanggal,Jumlah Bayar,Status
-sab@gmail.com,6417768304,Cicihua,06-12-2024 18:23:25,"3,000,000.00",Berhasil
-bry@gmail.com,9176371119,Cicihua,06-12-2024 18:25:47,"3,000,000.00",Berhasil
-ecel@gmail.com,9234300229,EXOL,06-12-2024 19:54:44,1000000,Berhasil
-vega@gmail.com,2243616113,Exotic,06-12-2024 20:18:12,"200,000.00",Berhasil
-caka@gmail.com,6896741833,XOXO,06-12-2024 22:49:58,2500000,Berhasil
-thania@gmail.com,5043508876,Axiata,07-12-2024 23:15:31,1500000,Berhasil
-danu@gmail.com,6567585376,Weca,08-12-2024 00:14:50,200000,Berhasil
+Kode Transaksi,Kode Obat,Nama Obat,Jumlah,Tanggal Transaksi,Harga Satuan,Total Harga,Keterangan
+TRX001,OBT001,Amlol 250mg,2,2023-10-01,334.0,668.0,Pembelian
+TRX002,OBT002,Simax 250mg,1,2023-10-02,1661.0,1661.0,Pembelian
+TRX003,OBT003,Atarax 25mg,3,2023-10-03,390.0,1170.0,Pembelian
+TRX004,OBT555,Ibuen 20mg,5,2025-05-31,81534.0,407670.0,Pembelian
+TRX005,OBT530,Captil 500mg,2,2025-05-31,55513.0,111026.0,Pembelian
+TRX006,OBT623,Metat 25mg,7,2025-05-31,85103.0,595721.0,Pembelian
+TRX007,OBT077,Omepum 5mg,5,2025-05-31,91538.0,457690.0,Pembelian
+TRX008,OBT345,Amloax 500mg,5,2025-05-31,74274.0,371370.0,Pembelian
+TRX009,OBT795,Losat 5mg,10,2025-05-31,33704.0,337040.0,Pembelian

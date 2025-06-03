@@ -2,9 +2,9 @@ import pandas as pd
 import fungsi1 as fs
 
 try:
-    df = pd.read_csv("rincian_acara.csv")
+    df = pd.read_csv("data_obat.csv")
 except FileNotFoundError:
-    df = pd.DataFrame(columns=["Kode", "Acara", "Guest Star", "Tempat", "Jadwal", "Harga Tiket", "Stok Tiket"])
+    df = pd.DataFrame(columns=["Kode", "Nama", "Kategori", "Stok", "Harga", "Tanggal_Kadaluarsa"])
 
 print("Selamat datang di aplikasi kami!")
-fs.menu_utama(df)
+fs.menu_utama()
