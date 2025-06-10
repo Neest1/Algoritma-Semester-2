@@ -11,7 +11,7 @@ from tabulate import tabulate
 import numpy as np
 from typing import List, Any
 
-# Admin credentials
+
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin123"
 
@@ -136,7 +136,7 @@ def binary_search(arr: List[Any], target: str, key: str) -> int:
     
     return -1
 
-# Quick Sort implementation (Divide and Conquer)
+
 def quick_sort(arr: List[dict], key: str, ascending: bool = True):
     if len(arr) <= 1:
         return arr
@@ -183,13 +183,13 @@ def menu_pencarian():
                 print("Pilihan tidak valid!")
                 continue
 
-            # Convert DataFrame to list of dictionaries for searching
+            
             data = df.to_dict('records')
             
-            # Sort data first for binary search
+            
             sorted_data = quick_sort(data, search_key)
             
-            # Perform binary search
+            
             result_idx = binary_search(sorted_data, query, search_key)
             
             if result_idx != -1:
@@ -239,16 +239,16 @@ def menu_pengurutan():
                 print("Pilihan tidak valid!")
                 continue
 
-            # Get sort direction
+           
             asc = input("Urutkan secara ascending? (y/n): ").lower() == 'y'
             
-            # Convert DataFrame to list of dictionaries for sorting
+            
             data = df.to_dict('records')
             
-            # Perform quick sort
+            
             sorted_data = quick_sort(data, sort_key, asc)
             
-            # Convert back to DataFrame for display
+            
             result_df = pd.DataFrame(sorted_data)
             
             print(f"\nData setelah diurutkan berdasarkan {sort_key}:")
@@ -536,7 +536,7 @@ def pembelian_obat():
 
     print(f"\n Total yang harus dibayar: Rp{obat_dipilih['Harga']:.2f} x {jumlah} = Rp{total_harga:.2f}")
 
-    # Simpan ke riwayat transaksi
+    
     try:
         df_riwayat = pd.read_csv("riwayat_transaksi.csv")
     except FileNotFoundError:
@@ -563,7 +563,7 @@ def pembelian_obat():
     df_riwayat = pd.concat([df_riwayat, pd.DataFrame(data)], ignore_index=True)
     df_riwayat.to_csv("riwayat_transaksi.csv", index=False)
 
-    # Kurangi stok
+   
     df_obat.loc[df_obat["Kode"] == kode_obat, "Stok"] -= jumlah
     df_obat.to_csv("data_obat.csv", index=False)
 
