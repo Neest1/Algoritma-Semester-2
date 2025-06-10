@@ -1,586 +1,510 @@
 import pandas as pd
-import calendar
 import time
-import sys
-import random
-from datetime import datetime
 import os
-import csv
+import math
+from datetime import datetime
 from halo import Halo
 from tabulate import tabulate
-import numpy as np
 from typing import List, Any
 
+NAMA_PENGGUNA_ADMIN = "admin"
+SANDI_ADMIN = "admin123"
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin123"
-
-def load_csv(file_name):
+def muat_data_csv(nama_file: str, kolom_default: list) -> pd.DataFrame:
+    """Memuat data dari file CSV, atau membuat file baru jika tidak ditemukan atau kosong."""
     try:
-        return pd.read_csv(file_name)
-    except FileNotFoundError:
-        print(f"File '{file_name}' tidak ditemukan. Cek kembali file!.")
+        # Coba baca file. Jika kosong, akan menimbulkan error.
+        return pd.read_csv(nama_file)
+    except (FileNotFoundError, pd.errors.EmptyDataError):
+        # Jika file tidak ditemukan ATAU jika file ada tapi kosong (menyebabkan EmptyDataError)
+        print(f"Info: Berkas '{nama_file}' tidak ditemukan atau kosong. Berkas akan disiapkan.")
+        animasi_memuat(1)
+        # Membuat DataFrame kosong dengan kolom yang ditentukan dan menyimpannya
+        df_kosong = pd.DataFrame(columns=kolom_default)
+        df_kosong.to_csv(nama_file, index=False)
+        return df_kosong
+    except Exception as e:
+        print(f"Terjadi kesalahan tak terduga saat memuat berkas '{nama_file}': {e}")
+        # Kembalikan DataFrame kosong agar program tidak berhenti
+        return pd.DataFrame(columns=kolom_default)
 
-def clear_alert(n=1):
-    for _ in range(n):
-        print("\033[F\033[K", end='')
-
-def clear_terminal():
+def bersihkan_layar():
+    """Membersihkan layar terminal."""
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def loading_animation(speed):
-    spinner = Halo(text='Loading', spinner='dots')
+def animasi_memuat(durasi: int):
+    """Menampilkan animasi memuat selama durasi tertentu."""
+    spinner = Halo(text='Memuat...', spinner='dots')
     spinner.start()
-    time.sleep(speed)  
+    time.sleep(durasi)  
     spinner.stop()
 
 def menu_utama():
-    print("╔═══════════════════════════════════════╗")
-    print("║     Sistem Informasi Data Apotek      ║")
-    print("╠═══════════════════════════════════════╣")
-    print("║  [1] Login Admin                      ║")
-    print("║  [2] Keluar                           ║")
-    print("╚═══════════════════════════════════════╝")
+    """Menampilkan menu utama aplikasi."""
     while True:
-        pilih = input("Pilih menu (1/2): ")
+        bersihkan_layar()
+        print("╔═══════════════════════════════════════╗")
+        print("║     Sistem Informasi Data Apotek      ║")
+        print("╠═══════════════════════════════════════╣")
+        print("║  [1] Masuk sebagai Admin              ║")
+        print("║  [2] Keluar                           ║")
+        print("╚═══════════════════════════════════════╝")
+        pilihan = input("Pilih menu (1/2): ").strip()
         
-        match pilih:
-            case "1":
-                clear_terminal()
-                login_admin()
-            case "2":
-                print("Terima kasih! Program telah selesai.")
-                clear_terminal()
-                break
-            case _:
-                print("Input tidak valid!. Silakan pilih 1 atau 2.")
-                loading_animation(3)
-                clear_alert(2)
-                continue
+        if pilihan == "1":
+            masuk_admin()
+            break 
+        elif pilihan == "2":
+            bersihkan_layar()
+            print("Terima kasih telah menggunakan program ini.")
+            time.sleep(2)
+            break
+        else:
+            print("Pilihan tidak valid! Silakan pilih 1 atau 2.")
+            time.sleep(2)
 
-def login_admin():
-    print("\n〓〓〓〓〓〓〓〓〓〓【 LOGIN ADMIN 】〓〓〓〓〓〓〓〓〓〓")
-    username = input("Username: ")
-    password = input("Password: ")
+def masuk_admin():
+    """Menangani proses masuk (login) admin."""
+    bersihkan_layar()
+    print("\n〓〓〓〓〓〓〓〓〓〓【 MASUK ADMIN 】〓〓〓〓〓〓〓〓〓〓")
+    nama_pengguna = input("Nama Pengguna: ").strip()
+    sandi = input("Sandi: ").strip()
 
-    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-        loading_animation(2)
-        print("Login berhasil!")
-        dashboard_admin()
+    if nama_pengguna == NAMA_PENGGUNA_ADMIN and sandi == SANDI_ADMIN:
+        animasi_memuat(1)
+        print("Berhasil masuk!")
+        time.sleep(1)
+        menu_admin()
     else:
-        print("Username atau password salah!")
-        loading_animation(2)
-        clear_terminal()
+        print("Nama pengguna atau sandi salah!")
+        animasi_memuat(2)
         menu_utama()
 
-def dashboard_admin():
-    clear_terminal()
-    print("╔═══════════════════════════════════════╗")
-    print("║        Menu Admin Apotek              ║")
-    print("╠═══════════════════════════════════════╣")
-    print("║  [1] Tambah Data Obat                 ║")
-    print("║  [2] Kelola Data Obat                 ║")
-    print("║  [3] Cari Obat                        ║")
-    print("║  [4] Urutkan Data Obat                ║")
-    print("║  [5] Pembelian Obat                   ║")
-    print("║  [6] Riwayat Transaksi                ║")
-    print("║  [7] Keluar                           ║")
-    print("╚═══════════════════════════════════════╝")
+def menu_admin():
+    """Menampilkan menu utama untuk admin."""
     while True:
-        pil = input("Silahkan pilih menu (1-6) : ")
-        match pil:
-            case '1':
-                clear_terminal()
-                tambah_obat()
-            case '2':
-                clear_terminal()
-                kelola_obat()
-            case '3':
-                clear_terminal()
-                menu_pencarian()
-            case '4':
-                clear_terminal()
-                menu_pengurutan()
-            case '5':
-                clear_terminal()
-                pembelian_obat()
-            case '6':
-                clear_terminal()
-                riwayat_transaksi()
-            case '7':
-                print("Terimakasih telah menggunakan sistem ini!")
-                loading_animation(2)
-                clear_terminal()
-                menu_utama()
-            case _:
-                print("Input tidak valid!. Silakan pilih 1-6.")
-                loading_animation(3)
-                clear_alert(2)
-                continue
+        bersihkan_layar()
+        print("╔═══════════════════════════════════════╗")
+        print("║             Menu Admin              ║")
+        print("╠═══════════════════════════════════════╣")
+        print("║  [1] Tambah Data Obat                 ║")
+        print("║  [2] Kelola Data Obat                 ║")
+        print("║  [3] Cari Obat                        ║")
+        print("║  [4] Urutkan Data Obat                ║")
+        print("║  [5] Lakukan Pembelian                ║")
+        print("║  [6] Lihat Riwayat Transaksi          ║")
+        print("║  [7] Kembali ke Menu Utama            ║")
+        print("╚═══════════════════════════════════════╝")
+        pilihan = input("Silahkan pilih menu (1-7): ").strip()
 
-# Binary Search implementation for medicine search
-def binary_search(arr: List[Any], target: str, key: str) -> int:
-    left, right = 0, len(arr) - 1
-    
-    while left <= right:
-        mid = (left + right) // 2
-        mid_val = str(arr[mid][key]).lower()
-        target = str(target).lower()
-        
-        if mid_val == target:
-            return mid
-        elif mid_val < target:
-            left = mid + 1
+        if pilihan == '1': tambah_data_obat()
+        elif pilihan == '2': kelola_data_obat()
+        elif pilihan == '3': cari_data_obat()
+        elif pilihan == '4': urutkan_data_obat()
+        elif pilihan == '5': lakukan_pembelian()
+        elif pilihan == '6': lihat_riwayat_transaksi()
+        elif pilihan == '7':
+            print("Kembali ke menu utama...")
+            animasi_memuat(1)
+            menu_utama()
+            break
         else:
-            right = mid - 1
+            print("Pilihan tidak valid! Silakan pilih 1-7.")
+            time.sleep(2)
+
+def cari_lompat(daftar_data: List[dict], target: str, kunci: str) -> int:
+    """Mencari data menggunakan algoritma Jump Search."""
+    jumlah_data = len(daftar_data)
+    if jumlah_data == 0: return -1
+        
+    langkah = int(math.sqrt(jumlah_data))
+    indeks_sebelumnya = 0
     
+    # Melompat untuk menemukan blok
+    while str(daftar_data[min(langkah, jumlah_data) - 1].get(kunci, '')).lower() < target.lower():
+        indeks_sebelumnya = langkah
+        langkah += int(math.sqrt(jumlah_data))
+        if indeks_sebelumnya >= jumlah_data: return -1
+            
+    # Pencarian linear di dalam blok
+    for i in range(indeks_sebelumnya, min(langkah, jumlah_data)):
+        if str(daftar_data[i].get(kunci, '')).lower() == target.lower(): return i
+        
     return -1
 
+def urutkan_cepat(daftar_data: List[dict], kunci: str, menaik: bool = True) -> List[dict]:
+    """Mengurutkan data menggunakan algoritma Quick Sort."""
+    if len(daftar_data) <= 1: return daftar_data
+    
+    poros = daftar_data[len(daftar_data) // 2]
+    nilai_poros = poros.get(kunci)
 
-def quick_sort(arr: List[dict], key: str, ascending: bool = True):
-    if len(arr) <= 1:
-        return arr
+    if isinstance(nilai_poros, str): nilai_poros = nilai_poros.lower()
     
-    pivot = arr[len(arr) // 2]
-    pivot_val = str(pivot[key]) if isinstance(pivot[key], str) else pivot[key]
+    kiri, tengah, kanan = [], [], []
     
-    left = [x for x in arr if (str(x[key]) if isinstance(x[key], str) else x[key]) < pivot_val]
-    middle = [x for x in arr if (str(x[key]) if isinstance(x[key], str) else x[key]) == pivot_val]
-    right = [x for x in arr if (str(x[key]) if isinstance(x[key], str) else x[key]) > pivot_val]
-    
-    result = quick_sort(left, key, ascending) + middle + quick_sort(right, key, ascending)
-    return result if ascending else result[::-1]
+    for item in daftar_data:
+        nilai_item = item.get(kunci)
+        if isinstance(nilai_item, str): nilai_item = nilai_item.lower()
+        if nilai_item is None: continue
 
-def menu_pencarian():
-    try:
-        df = pd.read_csv("data_obat.csv")
+        try:
+            if nilai_item < nilai_poros: kiri.append(item)
+            elif nilai_item == nilai_poros: tengah.append(item)
+            else: kanan.append(item)
+        except TypeError:
+            if str(nilai_item) < str(nilai_poros): kiri.append(item)
+            elif str(nilai_item) == str(nilai_poros): tengah.append(item)
+            else: kanan.append(item)
+
+    hasil_urut = urutkan_cepat(kiri, kunci, menaik) + tengah + urutkan_cepat(kanan, kunci, menaik)
+    return hasil_urut if menaik else hasil_urut[::-1]
+
+def cari_data_obat():
+    """Menangani logika untuk mencari data obat."""
+    while True:
+        bersihkan_layar()
+        kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
+        data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+        
         print("╔═══════════════════════════════════╗")
         print("║         Menu Pencarian Obat       ║")
         print("╠═══════════════════════════════════╣")
-        print("║  [1] Cari berdasarkan nama        ║")
-        print("║  [2] Cari berdasarkan kode        ║")
-        print("║  [3] Cari berdasarkan kategori    ║")
-        print("║  [4] Kembali                      ║")
+        print("║  [1] Cari berdasarkan Nama        ║")
+        print("║  [2] Cari berdasarkan Kode        ║")
+        print("║  [3] Cari berdasarkan Kategori    ║")
+        print("║  [4] Kembali ke Menu Admin        ║")
         print("╚═══════════════════════════════════╝")
 
-        while True:
-            pilihan = input("Pilih metode pencarian (1-4): ")
-            if pilihan == "4":
-                clear_terminal()
-                return dashboard_admin()
+        pilihan = input("Pilih metode pencarian (1-4): ").strip()
+        if pilihan == "4": break
 
-            search_key = ""
-            if pilihan == "1":
-                search_key = "Nama"
-                query = input("Masukkan nama obat: ")
-            elif pilihan == "2":
-                search_key = "Kode"
-                query = input("Masukkan kode obat: ")
-            elif pilihan == "3":
-                search_key = "Kategori"
-                query = input("Masukkan kategori obat: ")
-            else:
-                print("Pilihan tidak valid!")
-                continue
+        kunci_pencarian, kata_kunci = "", ""
+        if pilihan == "1": kunci_pencarian, kata_kunci = "Nama", input("Masukkan nama obat: ")
+        elif pilihan == "2": kunci_pencarian, kata_kunci = "Kode", input("Masukkan kode obat: ")
+        elif pilihan == "3": kunci_pencarian, kata_kunci = "Kategori", input("Masukkan kategori obat: ")
+        else: print("Pilihan tidak valid!"); time.sleep(2); continue
 
-            
-            data = df.to_dict('records')
-            
-            
-            sorted_data = quick_sort(data, search_key)
-            
-            
-            result_idx = binary_search(sorted_data, query, search_key)
-            
-            if result_idx != -1:
-                result = pd.DataFrame([sorted_data[result_idx]])
-                print("\nHasil Pencarian:")
-                print(tabulate(result, headers="keys", tablefmt="fancy_grid"))
-            else:
-                print(f"\nData dengan {search_key}: {query} tidak ditemukan!")
-            
-            input("\nTekan enter untuk melakukan pencarian lain: ")
-            clear_terminal()
-            return menu_pencarian()
+        if not kata_kunci.strip(): print("Input pencarian tidak boleh kosong."); time.sleep(2); continue
+        
+        daftar_obat = data_obat_df.to_dict('records')
+        data_terurut = sorted(daftar_obat, key=lambda x: str(x.get(kunci_pencarian, '')).lower())
+        
+        bersihkan_layar()
+        
+        hasil_pencarian = []
+        if pilihan == "2":
+            indeks_hasil = cari_lompat(data_terurut, kata_kunci, kunci_pencarian)
+            if indeks_hasil != -1: hasil_pencarian.append(data_terurut[indeks_hasil])
+        else:
+            for obat in data_terurut:
+                if kata_kunci.lower() in str(obat.get(kunci_pencarian, '')).lower(): hasil_pencarian.append(obat)
+        
+        if hasil_pencarian:
+            print(f"\n--- Hasil Pencarian untuk '{kata_kunci}' ---")
+            print(tabulate(pd.DataFrame(hasil_pencarian), headers="keys", tablefmt="fancy_grid", showindex=False))
+        else:
+            print(f"\nObat dengan {kunci_pencarian} mengandung '{kata_kunci}' tidak ditemukan.")
+        
+        input("\nTekan Enter untuk melanjutkan...")
 
-    except FileNotFoundError:
-        print("File data obat tidak ditemukan!")
-        return
-
-def menu_pengurutan():
-    try:
-        df = pd.read_csv("data_obat.csv")
+def urutkan_data_obat():
+    """Menangani logika untuk mengurutkan data obat."""
+    while True:
+        bersihkan_layar()
+        kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
+        data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+        if data_obat_df.empty:
+            print("Data obat kosong, tidak ada yang bisa diurutkan."); input("\nTekan Enter..."); break
+            
         print("╔═══════════════════════════════════╗")
         print("║       Menu Pengurutan Data        ║")
         print("╠═══════════════════════════════════╣")
-        print("║  [1] Urutkan berdasarkan nama     ║")
-        print("║  [2] Urutkan berdasarkan stok     ║")
-        print("║  [3] Urutkan berdasarkan harga    ║")
-        print("║  [4] Urutkan berdasarkan kategori ║")
-        print("║  [5] Kembali                      ║")
+        print("║  [1] Urutkan berdasarkan Nama     ║")
+        print("║  [2] Urutkan berdasarkan Stok     ║")
+        print("║  [3] Urutkan berdasarkan Harga    ║")
+        print("║  [4] Kembali ke Menu Admin        ║")
         print("╚═══════════════════════════════════╝")
 
-        while True:
-            pilihan = input("Pilih metode pengurutan (1-5): ")
-            if pilihan == "5":
-                clear_terminal()
-                return dashboard_admin()
+        pilihan = input("Pilih metode pengurutan (1-4): ").strip()
+        if pilihan == "4": break
 
-            sort_key = ""
-            if pilihan == "1":
-                sort_key = "Nama"
-            elif pilihan == "2":
-                sort_key = "Stok"
-            elif pilihan == "3":
-                sort_key = "Harga"
-            elif pilihan == "4":
-                sort_key = "Kategori"
-            else:
-                print("Pilihan tidak valid!")
-                continue
+        kunci_urutan = ""
+        if pilihan == "1": kunci_urutan = "Nama"
+        elif pilihan == "2": kunci_urutan = "Stok"
+        elif pilihan == "3": kunci_urutan = "Harga"
+        else: print("Pilihan tidak valid!"); time.sleep(2); continue
 
-           
-            asc = input("Urutkan secara ascending? (y/n): ").lower() == 'y'
-            
-            
-            data = df.to_dict('records')
-            
-            
-            sorted_data = quick_sort(data, sort_key, asc)
-            
-            
-            result_df = pd.DataFrame(sorted_data)
-            
-            print(f"\nData setelah diurutkan berdasarkan {sort_key}:")
-            print(tabulate(result_df, headers="keys", tablefmt="fancy_grid"))
-            
-            input("\nTekan enter untuk melakukan pengurutan lain: ")
-            clear_terminal()
-            return menu_pengurutan()
+        pilihan_urutan = input("Urutkan secara menaik (y) atau menurun (n)? (y/n): ").lower().strip()
+        if pilihan_urutan not in ['y', 'n']: print("Pilihan tidak valid!"); time.sleep(2); continue
+        urutan_menaik = True if pilihan_urutan == 'y' else False
+        
+        data_terurut = urutkan_cepat(data_obat_df.to_dict('records'), kunci_urutan, urutan_menaik)
+        
+        bersihkan_layar()
+        arah = "Menaik" if urutan_menaik else "Menurun"
+        print(f"\n--- Data diurutkan berdasarkan {kunci_urutan} ({arah}) ---")
+        print(tabulate(pd.DataFrame(data_terurut), headers="keys", tablefmt="fancy_grid", showindex=False))
+        
+        input("\nTekan Enter untuk melanjutkan...")
 
-    except FileNotFoundError:
-        print("File data obat tidak ditemukan!")
-        return
+def tambah_data_obat():
+    """Menangani penambahan data obat baru."""
+    bersihkan_layar()
+    kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
+    data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+    
+    print("\n--- Masukkan Data Obat Baru ---")
+    
+    kode_terakhir_str = "OBT000"
+    if not data_obat_df.empty and "Kode" in data_obat_df.columns and not data_obat_df["Kode"].isnull().all():
+        valid_codes = data_obat_df["Kode"].dropna().astype(str)[data_obat_df["Kode"].str.startswith("OBT", na=False)]
+        if not valid_codes.empty:
+            kode_terakhir_str = valid_codes.max()
 
-def tambah_obat():
     try:
-        df = pd.read_csv("data_obat.csv")
-    except FileNotFoundError:
-        df = pd.DataFrame(columns=["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"])
-
-    print("\n⩶⩶ Masukkan Data Obat Baru ⩶⩶")
-    kode_terakhir = df["Kode"].max() if not df.empty else "OBT000"
-    nomor_urut = int(kode_terakhir[3:]) + 1 if kode_terakhir else 1
+        nomor_urut = int(kode_terakhir_str[3:]) + 1
+    except (ValueError, IndexError):
+        nomor_urut = len(data_obat_df) + 1
     kode_obat = f"OBT{nomor_urut:03d}"
-    
+    print(f"Kode Obat Baru (otomatis): {kode_obat}")
+
+    # Pengambilan dan validasi input
     while True:
-        try:
-            nama_obat = input("Nama Obat\t: ")
-            if not nama_obat:
-                print("Nama obat tidak boleh kosong!")
-                continue
-            
-            kategori = input("Kategori\t: ")
-            if not kategori:
-                print("Kategori tidak boleh kosong!")
-                continue
-            
-            stok = int(input("Stok\t\t: "))
-            if stok < 0:
-                print("Stok tidak boleh negatif!")
-                continue
-            
-            harga = float(input("Harga\t\t: Rp. "))
-            if harga < 0:
-                print("Harga tidak boleh negatif!")
-                continue
-            
-            while True:
-                kadaluarsa = input("Kadaluarsa (DD-MM-YYYY)\t: ")
-                try:
-                    datetime.strptime(kadaluarsa, '%d-%m-%Y')
-                    break
-                except ValueError:
-                    print("Format tanggal salah! Gunakan format DD-MM-YYYY")
-                    continue
-            
-            deskripsi = input("Deskripsi\t: ")
-            if not deskripsi:
-                print("Deskripsi tidak boleh kosong!")
-                continue
-            
-            break
-        except ValueError:
-            print("Input tidak valid! Pastikan stok dan harga berupa angka.")
-            continue
-
-    obat_baru = pd.DataFrame([{
-        "Kode": kode_obat,
-        "Nama": nama_obat,
-        "Kategori": kategori,
-        "Stok": stok,
-        "Harga": harga,
-        "Kadaluarsa": kadaluarsa,
-        "Deskripsi": deskripsi
-    }])
-
-    df = pd.concat([df, obat_baru], ignore_index=True)
-    df.to_csv("data_obat.csv", index=False)
-    print("\nData obat yang ditambahkan:")
-    print(tabulate(obat_baru, headers="keys", tablefmt="fancy_grid"))
-    print("\n⩶⩶⩶ Data obat berhasil disimpan ⩶⩶⩶")
+        nama_obat = input("Nama Obat\t: ").strip()
+        if nama_obat: break
+        else: print("Nama obat tidak boleh kosong.")
     
-    input("\nTekan enter untuk kembali ke menu: ")
-    clear_terminal()
-    return dashboard_admin()
+    kategori = input("Kategori\t: ").strip()
 
-def kelola_obat():
-    try:
-        df = pd.read_csv('data_obat.csv')
+    while True:
+        stok_str = input("Stok\t\t: ").strip()
+        try:
+            stok = int(stok_str)
+            if stok >= 0: break
+            else: print("Stok tidak boleh negatif.")
+        except ValueError:
+            print("Stok harus berupa angka.")
+
+    while True:
+        harga_str = input("Harga\t\t: Rp. ").strip().replace('.', '').replace(',', '')
+        try:
+            harga = float(harga_str)
+            if harga >= 0: break
+            else: print("Harga tidak boleh negatif.")
+        except ValueError:
+            print("Harga harus berupa angka.")
+    
+    kadaluarsa = input("Kadaluarsa (DD-MM-YYYY)\t: ").strip()
+    deskripsi = input("Deskripsi\t: ").strip()
+
+    data_baru = {"Kode": kode_obat, "Nama": nama_obat, "Kategori": kategori, "Stok": stok, "Harga": harga, "Kadaluarsa": kadaluarsa, "Deskripsi": deskripsi}
+    df_baru = pd.DataFrame([data_baru])
+
+    data_obat_df = pd.concat([data_obat_df, df_baru], ignore_index=True)
+    data_obat_df.to_csv("data_obat.csv", index=False)
+    
+    bersihkan_layar()
+    print("\n--- Data obat berhasil disimpan ---")
+    print(tabulate(df_baru, headers="keys", tablefmt="fancy_grid", showindex=False))
+    input("\nTekan Enter untuk kembali...")
+
+def kelola_data_obat():
+    """Menu untuk mengelola data obat (update, hapus)."""
+    while True:
+        bersihkan_layar()
+        kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
+        data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+        
         print("╔═══════════════════════════════════╗")
         print("║         Menu Kelola Obat          ║")
         print("╠═══════════════════════════════════╣")
-        print("║  [1] Tampilkan semua obat         ║")
-        print("║  [2] Update nama obat             ║")
-        print("║  [3] Update kategori              ║")
-        print("║  [4] Update stok                  ║")
-        print("║  [5] Update harga                 ║")
-        print("║  [6] Update kadaluarsa            ║")
-        print("║  [7] Update deskripsi             ║")
-        print("║  [8] Hapus data obat              ║")
-        print("║  [9] Kembali                      ║")
+        print("║  [1] Tampilkan Semua Obat         ║")
+        print("║  [2] Perbarui Data Obat           ║")
+        print("║  [3] Hapus Data Obat              ║")
+        print("║  [4] Kembali ke Menu Admin        ║")
         print("╚═══════════════════════════════════╝")
 
-        while True:
-            pil = input("Silahkan pilih menu (1-9): ")
-            match pil:
-                case "1":
-                    tampilkan_obat()
-                    input("\nTekan enter untuk kembali ke menu: ")
-                    clear_terminal()
-                    kelola_obat()
-                case "2":
-                    update_data_obat("Nama")
-                case "3":
-                    update_data_obat("Kategori")
-                case "4":
-                    update_data_obat("Stok")
-                case "5":
-                    update_data_obat("Harga")
-                case "6":
-                    update_data_obat("Kadaluarsa")
-                case "7":
-                    update_data_obat("Deskripsi")
-                case "8":
-                    hapus_obat()
-                case "9":
-                    clear_terminal()
-                    dashboard_admin()
-                case _:
-                    print("Input tidak valid! Silakan pilih 1-9.")
-                    loading_animation(3)
-                    clear_alert(2)
-    except FileNotFoundError:
-        print("File data obat tidak ditemukan!")
-        df = pd.DataFrame(columns=["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"])
-        df.to_csv("data_obat.csv", index=False)
-        return kelola_obat()
+        pilihan = input("Silahkan pilih menu (1-4): ").strip()
+        if pilihan == "1":
+            bersihkan_layar()
+            if data_obat_df.empty: print("Data obat kosong.")
+            else: print("\n" + tabulate(data_obat_df, headers="keys", tablefmt="fancy_grid", showindex=False))
+            input("\nTekan Enter untuk kembali...")
+        elif pilihan == "2": perbarui_data_obat(data_obat_df)
+        elif pilihan == "3": hapus_data_obat(data_obat_df)
+        elif pilihan == "4": break
+        else: print("Pilihan tidak valid!"); time.sleep(2)
 
-def update_data_obat(field):
-    try:
-        df = pd.read_csv("data_obat.csv")
-        print(f"\n〓〓〓〓〓〓〓〓〓〓 Update {field} Obat 〓〓〓〓〓〓〓〓〓〓")
-        print(tabulate(df, headers="keys", tablefmt="fancy_grid"))
+def perbarui_data_obat(data_obat_df):
+    """Menangani proses pembaruan data obat."""
+    bersihkan_layar()
+    if data_obat_df.empty:
+        print("Data obat kosong."); input("\nTekan Enter..."); return
+    print(tabulate(data_obat_df, headers="keys", tablefmt="fancy_grid", showindex=False))
+    
+    kode_target = input("\nMasukkan KODE obat yang akan diperbarui: ").strip().upper()
+    baris_target = data_obat_df[data_obat_df['Kode'].str.upper() == kode_target]
+
+    if baris_target.empty:
+        print(f"Kode obat '{kode_target}' tidak ditemukan."); time.sleep(2); return
+
+    indeks_target = baris_target.index[0]
+    
+    print("\nData apa yang ingin diperbarui?")
+    print("[1] Nama, [2] Kategori, [3] Stok, [4] Harga, [5] Kadaluarsa, [6] Deskripsi")
+    pilihan_kolom = input("Pilih (1-6): ").strip()
+
+    peta_kolom = {"1": "Nama", "2": "Kategori", "3": "Stok", "4": "Harga", "5": "Kadaluarsa", "6": "Deskripsi"}
+    kolom_untuk_diperbarui = peta_kolom.get(pilihan_kolom)
+
+    if not kolom_untuk_diperbarui:
+        print("Pilihan tidak valid."); time.sleep(2); return
         
-        while True:
-            kode_obat = input("\nMasukkan kode obat (input [0] untuk kembali): ")
-            if kode_obat == "0":
-                clear_terminal()
-                return kelola_obat()
-            
-            if kode_obat in df["Kode"].values:
-                try:
-                    if field in ["Stok", "Harga"]:
-                        nilai_baru = float(input(f"Masukkan {field} baru: "))
-                        if nilai_baru < 0:
-                            print(f"{field} tidak boleh negatif!")
-                            continue
-                    elif field == "Kadaluarsa":
-                        while True:
-                            nilai_baru = input(f"Masukkan {field} baru (DD-MM-YYYY): ")
-                            try:
-                                datetime.strptime(nilai_baru, '%d-%m-%Y')
-                                break
-                            except ValueError:
-                                print("Format tanggal salah! Gunakan format DD-MM-YYYY")
-                                continue
-                    else:
-                        nilai_baru = input(f"Masukkan {field} baru: ")
-                        if not nilai_baru:
-                            print(f"{field} tidak boleh kosong!")
-                            continue
-                    
-                    df.loc[df["Kode"] == kode_obat, field] = nilai_baru
-                    df.to_csv("data_obat.csv", index=False)
-                    print(f"\n{field} berhasil diperbarui")
-                    print("\nData setelah diperbarui:")
-                    print(tabulate(df[df["Kode"] == kode_obat], headers="keys", tablefmt="fancy_grid"))
-                    input("\nTekan enter untuk kembali ke menu: ")
-                    clear_terminal()
-                    return kelola_obat()
-                except ValueError:
-                    print("Input tidak valid!")
-                    continue
-            else:
-                print(f"Kode obat {kode_obat} tidak ditemukan")
-                loading_animation(3)
-                clear_alert(2)
-    except FileNotFoundError:
-        print("File data obat tidak ditemukan!")
-        return
-
-def hapus_obat():
-    try:
-        df = pd.read_csv("data_obat.csv")
-        print("\n〓〓〓〓〓〓〓〓〓〓 Hapus Data Obat 〓〓〓〓〓〓〓〓〓〓")
-        print(tabulate(df, headers="keys", tablefmt="fancy_grid"))
-        
-        while True:
-            kode_obat = input("\nMasukkan kode obat yang akan dihapus (input [0] untuk batal): ")
-            if kode_obat == "0":
-                clear_terminal()
-                return kelola_obat()
-            
-            if kode_obat in df["Kode"].values:
-                konfirmasi = input("Anda yakin ingin menghapus data ini? (y/n): ").lower()
-                if konfirmasi == 'y':
-                    df = df[df["Kode"] != kode_obat]
-                    df.to_csv("data_obat.csv", index=False)
-                    print("\nData obat berhasil dihapus")
-                    input("\nTekan enter untuk kembali ke menu: ")
-                    clear_terminal()
-                    return kelola_obat()
-                else:
-                    print("Penghapusan dibatalkan")
-                    loading_animation(3)
-                    clear_terminal()
-                    return kelola_obat()
-            else:
-                print(f"Kode obat {kode_obat} tidak ditemukan")
-                loading_animation(3)
-                clear_alert(2)
-    except FileNotFoundError:
-        print("File data obat tidak ditemukan!")
-        return
-
-def tampilkan_obat():
-    try:
-        df = pd.read_csv("data_obat.csv")
-        pd.set_option('display.float_format', '{:,.2f}'.format)
-        print("\n〓〓〓〓〓〓〓〓〓〓 Daftar Obat 〓〓〓〓〓〓〓〓〓〓")
-        print(tabulate(df, headers="keys", tablefmt="fancy_grid"))
-    except FileNotFoundError:
-        print("File data obat tidak ditemukan!")
-        return
-    
-def generate_kode_transaksi():
-    try:
-        df = pd.read_csv("riwayat_transaksi.csv")
-        last_kode = df["Kode Transaksi"].iloc[-1]
-        nomor = int(last_kode.replace("TRX", "")) + 1
-        return f"TRX{nomor:03}"
-    except:
-        return "TRX001"
-
-def pembelian_obat():
-    df_obat = pd.read_csv("data_obat.csv")
-    df_obat["Nama"] = df_obat["Nama"].astype(str)
-
-    nama_cari = input("Masukkan nama obat yang ingin dicari : ").strip().lower()
-
-    hasil = df_obat[df_obat["Nama"].str.lower().str.contains(nama_cari)].copy()
-
-    if hasil.empty:
-        print("Tidak ditemukan obat dengan nama tersebut.")
-        input("\nTekan enter untuk kembali ke menu: ")
-        clear_terminal()
-        return dashboard_admin()
-    
-
-    hasil = hasil.sort_values(by="Stok", ascending=False)
-    hasil_reset = hasil.reset_index(drop=True)
-    hasil_reset.index += 1
-
-    print("\n〓〓〓〓〓〓〓〓〓〓 Hasil Pencarian Obat 〓〓〓〓〓〓〓〓〓〓")
-    print(tabulate(hasil_reset[["Nama", "Kode", "Stok", "Harga"]], headers="keys", tablefmt="fancy_grid"))
-
-    kode_obat = input("Masukkan KODE OBAT yang ingin dibeli: ").strip().upper()
-    if kode_obat not in hasil["Kode"].values:
-        print("Kode obat tidak sesuai dengan hasil pencarian.")
-        input("\nTekan enter untuk kembali ke menu: ")
-        clear_terminal()
-        return dashboard_admin()
-
-    obat_dipilih = hasil[hasil["Kode"] == kode_obat].iloc[0]
+    nilai_baru_str = input(f"Masukkan {kolom_untuk_diperbarui} baru: ").strip()
     
     try:
-        jumlah = int(input(f"Masukkan jumlah (Stok tersedia {obat_dipilih['Stok']}): "))
-        if jumlah <= 0 or jumlah > obat_dipilih["Stok"]:
-            print("Jumlah tidak valid.")
-            return
+        if kolom_untuk_diperbarui == "Stok":
+            nilai_baru = int(nilai_baru_str)
+        elif kolom_untuk_diperbarui == "Harga":
+            nilai_baru = float(nilai_baru_str)
+        else:
+            nilai_baru = nilai_baru_str
     except ValueError:
-        print("Input jumlah harus berupa angka.")
-        return
+        print("Input tidak valid untuk Stok atau Harga. Perubahan dibatalkan."); time.sleep(2); return
 
-    total_harga = obat_dipilih["Harga"] * jumlah
-
-    print(f"\n Total yang harus dibayar: Rp{obat_dipilih['Harga']:.2f} x {jumlah} = Rp{total_harga:.2f}")
-
+    data_obat_df.loc[indeks_target, kolom_untuk_diperbarui] = nilai_baru
+    data_obat_df.to_csv("data_obat.csv", index=False)
     
+    bersihkan_layar()
+    print(f"\nData {kolom_untuk_diperbarui} untuk kode {kode_target} berhasil diperbarui.")
+    print(tabulate(data_obat_df.loc[[indeks_target]], headers="keys", tablefmt="fancy_grid", showindex=False))
+    input("\nTekan Enter untuk kembali...")
+
+def hapus_data_obat(data_obat_df):
+    """Menangani proses penghapusan data obat."""
+    bersihkan_layar()
+    if data_obat_df.empty:
+        print("Data obat kosong."); input("\nTekan Enter..."); return
+    print(tabulate(data_obat_df, headers="keys", tablefmt="fancy_grid", showindex=False))
+    
+    kode_target = input("\nMasukkan KODE obat yang akan dihapus: ").strip().upper()
+    baris_target = data_obat_df[data_obat_df['Kode'].str.upper() == kode_target]
+
+    if baris_target.empty:
+        print(f"Kode obat '{kode_target}' tidak ditemukan."); time.sleep(2); return
+
+    konfirmasi = input(f"Yakin ingin menghapus obat '{baris_target.iloc[0]['Nama']}'? (y/n): ").lower().strip()
+    if konfirmasi == 'y':
+        data_obat_df = data_obat_df[data_obat_df['Kode'].str.upper() != kode_target]
+        data_obat_df.to_csv("data_obat.csv", index=False)
+        print("Data berhasil dihapus.")
+        animasi_memuat(1)
+    else:
+        print("Penghapusan dibatalkan.")
+        time.sleep(2)
+
+def buat_kode_transaksi():
+    """Membuat kode transaksi baru secara otomatis."""
     try:
-        df_riwayat = pd.read_csv("riwayat_transaksi.csv")
-    except FileNotFoundError:
-        df_riwayat = pd.DataFrame(columns=["Kode Transaksi", "Kode Obat", "Nama Obat", "Jumlah", "Tanggal Transaksi", "Harga Satuan", "Total Harga", "Keterangan"])
+        kolom_riwayat = ["Kode Transaksi", "Tanggal Transaksi", "Nama Pembeli", "Kode Obat", "Nama Obat", "Jumlah", "Harga Satuan", "Total Harga"]
+        df_riwayat = muat_data_csv("riwayat_transaksi.csv", kolom_riwayat)
+        if df_riwayat.empty or "Kode Transaksi" not in df_riwayat.columns: return "TRX001"
+        kode_terakhir = df_riwayat["Kode Transaksi"].dropna().max()
+        nomor_terakhir = int(kode_terakhir[3:])
+        return f"TRX{nomor_terakhir + 1:03d}"
+    except (ValueError, IndexError, TypeError):
+        return f"TRX{len(df_riwayat) + 1:03d}"
 
-    nomor_terakhir = 0
-    if not df_riwayat.empty:
-        nomor_terakhir = int(df_riwayat["Kode Transaksi"].str.extract(r'(\d+)').dropna().astype(int).max().iloc[0])
+def lakukan_pembelian():
+    """Menangani logika untuk transaksi pembelian obat."""
+    kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
+    data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+    if data_obat_df.empty:
+        bersihkan_layar(); print("Data obat kosong."); input("\nTekan Enter..."); return
 
-    kode_transaksi = f"TRX{nomor_terakhir+1:03}"
-    tanggal = datetime.now().strftime("%Y-%m-%d")
+    while True:
+        bersihkan_layar()
+        print("\n--- Lakukan Pembelian Obat ---")
+        nama_pembeli = input("Masukkan Nama Pembeli (atau 0 untuk batal): ").strip()
+        if nama_pembeli == '0': break
+        if not nama_pembeli:
+            print("Nama pembeli tidak boleh kosong."); time.sleep(2); continue
 
-    data = {
-        "Kode Transaksi": [kode_transaksi],
-        "Kode Obat": [obat_dipilih["Kode"]],
-        "Nama Obat": [obat_dipilih["Nama"]],
-        "Jumlah": [jumlah],
-        "Tanggal Transaksi": [tanggal],
-        "Harga Satuan": [obat_dipilih["Harga"]],
-        "Total Harga": [total_harga],
-        "Keterangan": ["Pembelian"]
-    }
+        print("\n" + tabulate(data_obat_df[['Kode', 'Nama', 'Stok', 'Harga']], headers="keys", tablefmt="simple"))
+        
+        kode_target = input("\nMasukkan KODE obat yang dibeli: ").strip().upper()
+        
+        obat_terpilih = data_obat_df[data_obat_df['Kode'].str.upper() == kode_target]
+        if obat_terpilih.empty:
+            print("Kode tidak ditemukan."); time.sleep(2); continue
+        
+        obat = obat_terpilih.iloc[0]
+        stok_tersedia = int(obat['Stok'])
+        harga_satuan = float(obat['Harga'])
+        print(f"Obat: {obat['Nama']}, Stok: {stok_tersedia}, Harga: Rp {harga_satuan:,.0f}")
+        
+        while True:
+            jumlah_beli_str = input("Masukkan jumlah beli: ")
+            try:
+                jumlah_beli = int(jumlah_beli_str)
+                if 0 < jumlah_beli <= stok_tersedia:
+                    break
+                elif jumlah_beli > stok_tersedia:
+                    print("Stok tidak mencukupi.")
+                else:
+                    print("Jumlah harus lebih dari 0.")
+            except ValueError:
+                print("Jumlah harus berupa angka.")
+            
+        total_harga = harga_satuan * jumlah_beli
+        print(f"Total harga: Rp {total_harga:,.0f}")
+        
+        konfirmasi = input("Lanjutkan pembayaran? (y/n): ").lower().strip()
+        if konfirmasi == 'y':
+            data_obat_df.loc[data_obat_df['Kode'].str.upper() == kode_target, 'Stok'] -= jumlah_beli
+            data_obat_df.to_csv("data_obat.csv", index=False)
+            
+            kolom_riwayat = ["Kode Transaksi", "Tanggal Transaksi", "Nama Pembeli", "Kode Obat", "Nama Obat", "Jumlah", "Harga Satuan", "Total Harga"]
+            df_riwayat = muat_data_csv("riwayat_transaksi.csv", kolom_riwayat)
 
-    df_riwayat = pd.concat([df_riwayat, pd.DataFrame(data)], ignore_index=True)
-    df_riwayat.to_csv("riwayat_transaksi.csv", index=False)
+            transaksi_baru = {"Kode Transaksi": buat_kode_transaksi(), "Tanggal Transaksi": datetime.now().strftime("%d-%m-%Y"), "Nama Pembeli": nama_pembeli, "Kode Obat": kode_target, "Nama Obat": obat['Nama'], "Jumlah": jumlah_beli, "Harga Satuan": harga_satuan, "Total Harga": total_harga}
+            df_transaksi_baru = pd.DataFrame([transaksi_baru])
+            df_riwayat = pd.concat([df_riwayat, df_transaksi_baru], ignore_index=True)
+            df_riwayat.to_csv("riwayat_transaksi.csv", index=False)
 
-   
-    df_obat.loc[df_obat["Kode"] == kode_obat, "Stok"] -= jumlah
-    df_obat.to_csv("data_obat.csv", index=False)
+            print("Pembelian berhasil dan stok telah diperbarui.")
+            input("Tekan Enter untuk kembali..."); break
+        else:
+            print("Pembelian dibatalkan."); input("Tekan Enter..."); break
 
-    print("\n Transaksi berhasil disimpan.")
-    input("\nTekan enter untuk kembali ke menu: ")
-    clear_terminal()
-    return dashboard_admin()
+def lihat_riwayat_transaksi():
+    """Menampilkan semua riwayat transaksi."""
+    bersihkan_layar()
+    kolom_riwayat = ["Kode Transaksi", "Tanggal Transaksi", "Nama Pembeli", "Kode Obat", "Nama Obat", "Jumlah", "Harga Satuan", "Total Harga"]
+    df_riwayat = muat_data_csv("riwayat_transaksi.csv", kolom_riwayat)
 
-def riwayat_transaksi():
-    try:
-        df_transaksi = pd.read_csv("riwayat_transaksi.csv")
-        print("\n〓〓〓〓〓〓〓〓〓〓 Riwayat Transaksi 〓〓〓〓〓〓〓〓〓〓")
-        print(tabulate(df_transaksi, headers="keys", tablefmt="fancy_grid"))
-        input("\nTekan enter untuk kembali ke menu: ")
-        clear_terminal()
-        return dashboard_admin()
-    except FileNotFoundError:
-        print("Belum ada riwayat transaksi!")
-        loading_animation(3)
-        return dashboard_admin()
+    if df_riwayat.empty:
+        print("Belum ada riwayat transaksi.")
+    else:
+        print("\n--- Riwayat Transaksi ---")
+        df_tampil = df_riwayat.copy()
+        for kolom_harga in ["Harga Satuan", "Total Harga"]:
+            if kolom_harga in df_tampil.columns:
+                df_tampil[kolom_harga] = df_tampil[kolom_harga].apply(lambda x: f"Rp{x:,.0f}" if pd.notna(x) else "Rp0")
+        
+        print(tabulate(df_tampil, headers="keys", tablefmt="fancy_grid", showindex=False))
+    
+    input("\nTekan Enter untuk kembali...")
+
+if __name__ == '__main__':
+    """Fungsi utama yang akan dijalankan saat script dieksekusi."""
+    kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
+    if not os.path.exists("data_obat.csv"):
+        muat_data_csv("data_obat.csv", kolom_obat)
+
+    kolom_riwayat = ["Kode Transaksi", "Tanggal Transaksi", "Nama Pembeli", "Kode Obat", "Nama Obat", "Jumlah", "Harga Satuan", "Total Harga"]
+    if not os.path.exists("riwayat_transaksi.csv"):
+        muat_data_csv("riwayat_transaksi.csv", kolom_riwayat)
+    
+    menu_utama()
