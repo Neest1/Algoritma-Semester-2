@@ -497,6 +497,10 @@ def lakukan_pembelian():
             print("Kode tidak ditemukan."); time.sleep(2); continue
         
         obat = obat_terpilih.iloc[0]
+        tanggal_kadaluarsa = datetime.strptime(obat['Kadaluarsa'], "%Y-%m-%d")
+        if tanggal_kadaluarsa < datetime.now():
+            print(f"Obat '{obat['Nama']}' sudah kedaluwarsa pada {obat['Kadaluarsa']}. Tidak bisa dibeli.")
+            input("Tekan Enter untuk kembali..."); continue
         stok_tersedia = int(obat['Stok'])
         harga_satuan = float(obat['Harga'])
         print(f"Obat: {obat['Nama']}, Stok: {stok_tersedia}, Harga: Rp {harga_satuan:,.0f}")
