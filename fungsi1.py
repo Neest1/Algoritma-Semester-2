@@ -132,33 +132,90 @@ def cari_lompat(daftar_data: List[dict], target: str, kunci: str) -> int:
         
     return -1
 
-def urutkan_cepat(daftar_data: List[dict], kunci: str, menaik: bool = True) -> List[dict]:
-    """Mengurutkan data menggunakan algoritma Quick Sort."""
-    if len(daftar_data) <= 1: return daftar_data
-    
-    poros = daftar_data[len(daftar_data) // 2]
-    nilai_poros = poros.get(kunci)
+def urutkan_cepat(data_list, key, ascending=True):
+    """Mengurutkan data berdasarkan key tertentu menggunakan metode QuickSort."""
+    if len(data_list) <= 1:
+        return data_list
 
-    if isinstance(nilai_poros, str): nilai_poros = nilai_poros.lower()
-    
-    kiri, tengah, kanan = [], [], []
-    
-    for item in daftar_data:
-        nilai_item = item.get(kunci)
-        if isinstance(nilai_item, str): nilai_item = nilai_item.lower()
-        if nilai_item is None: continue
+    pivot = data_list[0]
+    pivot_key = str(pivot[key]).lower() if isinstance(pivot[key], str) else pivot[key]
 
-        try:
-            if nilai_item < nilai_poros: kiri.append(item)
-            elif nilai_item == nilai_poros: tengah.append(item)
-            else: kanan.append(item)
-        except TypeError:
-            if str(nilai_item) < str(nilai_poros): kiri.append(item)
-            elif str(nilai_item) == str(nilai_poros): tengah.append(item)
-            else: kanan.append(item)
+    def ambil_kunci(item):
+        return str(item[key]).lower() if isinstance(item[key], str) else item[key]
 
-    hasil_urut = urutkan_cepat(kiri, kunci, menaik) + tengah + urutkan_cepat(kanan, kunci, menaik)
-    return hasil_urut if menaik else hasil_urut[::-1]
+    kiri = [item for item in data_list[1:] if ambil_kunci(item) <= pivot_key] if ascending else [item for item in data_list[1:] if ambil_kunci(item) > pivot_key]
+    kanan = [item for item in data_list[1:] if ambil_kunci(item) > pivot_key] if ascending else [item for item in data_list[1:] if ambil_kunci(item) <= pivot_key]
+
+    return urutkan_cepat(kiri, key, ascending) + [pivot] + urutkan_cepat(kanan, key, ascending)
+
+def urutkan_data_obat():
+    """Menangani logika untuk mengurutkan data obat."""
+    while True:
+        bersihkan_layar()
+        kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
+        data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+        if data_obat_df.empty:
+            print("Data obat kosong, tidak ada yang bisa diurutkan."); input("\nTekan Enter..."); break
+            
+        print("╔═══════════════════════════════════╗")
+        print("║       Menu Pengurutan Data        ║")
+        print("╠═══════════════════════════════════╣")
+        print("║  [1] Urutkan berdasarkan Nama     ║")
+        print("║  [2] Urutkan berdasarkan Stok     ║")
+        print("║  [3] Urutkan berdasarkan Harga    ║")
+        print("║  [4] Kembali ke Menu Admin        ║")
+        print("╚═══════════════════════════════════╝")
+
+        pilihan = input("Pilih metode pengurutan (1-4): ").strip()
+        if pilihan == "4": break
+
+        kunci_urutan = ""
+        if pilihan == "1": kunci_urutan = "Nama"
+        elif pilihan == "2": kunci_urutan = "Stok"
+        elif pilihan == "3": kunci_urutan = "Harga"
+        else: print("Pilihan tidak valid!"); time.sleep(2); continue
+
+        pilihan_urutan = input("Urutkan secara menaik (y) atau menurun (n)? (y/n): ").lower().strip()
+        if pilihan_urutan not in ['y', 'n']: print("Pilihan tidak valid!"); time.sleep(2); continue
+        urutan_menaik = True if pilihan_urutan == 'y' else False
+        
+        # Konversi data agar sorting bisa konsisten (khusus kolom string seperti Nama)
+        data_terurut = urutkan_cepat(data_obat_df.to_dict('records'), kunci_urutan, urutan_menaik)
+        
+        bersihkan_layar()
+        arah = "Menaik" if urutan_menaik else "Menurun"
+        print(f"\n--- Data diurutkan berdasarkan {kunci_urutan} ({arah}) ---")
+        print(tabulate(pd.DataFrame(data_terurut), headers="keys", tablefmt="fancy_grid", showindex=False))
+        
+        input("\nTekan Enter untuk melanjutkan...")
+
+# def urutkan_cepat(daftar_data: List[dict], kunci: str, menaik: bool = True) -> List[dict]:
+#     """Mengurutkan data menggunakan algoritma Quick Sort."""
+#     if len(daftar_data) <= 1: return daftar_data
+    
+#     poros = daftar_data[len(daftar_data) // 2]
+#     nilai_poros = poros.get(kunci)
+
+#     if isinstance(nilai_poros, str): nilai_poros = nilai_poros.lower()
+    
+#     kiri, tengah, kanan = [], [], []
+    
+#     for item in daftar_data:
+#         nilai_item = item.get(kunci)
+#         if isinstance(nilai_item, str): nilai_item = nilai_item.lower()
+#         if nilai_item is None: continue
+
+#         try:
+#             if nilai_item < nilai_poros: kiri.append(item)
+#             elif nilai_item == nilai_poros: tengah.append(item)
+#             else: kanan.append(item)
+#         except TypeError:
+#             if str(nilai_item) < str(nilai_poros): kiri.append(item)
+#             elif str(nilai_item) == str(nilai_poros): tengah.append(item)
+#             else: kanan.append(item)
+
+#     hasil_urut = urutkan_cepat(kiri, kunci, menaik) + tengah + urutkan_cepat(kanan, kunci, menaik)
+#     return hasil_urut if menaik else hasil_urut[::-1]
 
 def cari_data_obat():
     """Menangani logika untuk mencari data obat."""
