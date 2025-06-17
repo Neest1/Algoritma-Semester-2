@@ -91,7 +91,7 @@ def menu_admin():
     while True:
         bersihkan_layar()
         print("╔═══════════════════════════════════════╗")
-        print("║             Menu Admin              ║")
+        print("║             Menu Admin                ║")
         print("╠═══════════════════════════════════════╣")
         print("║  [1] Tambah Data Obat                 ║")
         print("║  [2] Kelola Data Obat                 ║")
@@ -103,12 +103,18 @@ def menu_admin():
         print("╚═══════════════════════════════════════╝")
         pilihan = input("Silahkan pilih menu (1-7): ").strip()
 
-        if pilihan == '1': tambah_data_obat()
-        elif pilihan == '2': kelola_data_obat()
-        elif pilihan == '3': cari_data_obat()
-        elif pilihan == '4': urutkan_data_obat()
-        elif pilihan == '5': lakukan_pembelian()
-        elif pilihan == '6': lihat_riwayat_transaksi()
+        if pilihan == '1': 
+            tambah_data_obat()
+        elif pilihan == '2': 
+            kelola_data_obat()
+        elif pilihan == '3': 
+            cari_data_obat()
+        elif pilihan == '4': 
+            urutkan_data_obat()
+        elif pilihan == '5': 
+            lakukan_pembelian()
+        elif pilihan == '6': 
+            lihat_riwayat_transaksi()
         elif pilihan == '7':
             print("Kembali ke menu utama...")
             animasi_memuat(1)
@@ -189,9 +195,12 @@ def urutkan_data_obat():
         if pilihan == "4": break
 
         kunci_urutan = ""
-        if pilihan == "1": kunci_urutan = "Nama"
-        elif pilihan == "2": kunci_urutan = "Stok"
-        elif pilihan == "3": kunci_urutan = "Harga"
+        if pilihan == "1": 
+            kunci_urutan = "Nama"
+        elif pilihan == "2": 
+            kunci_urutan = "Stok"
+        elif pilihan == "3": 
+            kunci_urutan = "Harga"
         else: print("Pilihan tidak valid!"); time.sleep(2); continue
 
         pilihan_urutan = input("Urutkan secara menaik (y) atau menurun (n)? (y/n): ").lower().strip()
@@ -264,12 +273,18 @@ def menu_pengurutan_hasil_pencarian(df_hasil: pd.DataFrame):
         
         pilihan = input("Pilih opsi pengurutan (0-6): ").strip()
         
-        if pilihan == '1': df_urut = df_urut.sort_values(by='Harga', ascending=True)
-        elif pilihan == '2': df_urut = df_urut.sort_values(by='Harga', ascending=False)
-        elif pilihan == '3': df_urut = df_urut.sort_values(by='Stok', ascending=True)
-        elif pilihan == '4': df_urut = df_urut.sort_values(by='Stok', ascending=False)
-        elif pilihan == '5': df_urut = df_urut.sort_values(by='DosisNumerik', ascending=True)
-        elif pilihan == '6': df_urut = df_urut.sort_values(by='DosisNumerik', ascending=False)
+        if pilihan == '1': 
+            df_urut = df_urut.sort_values(by='Harga', ascending=True)
+        elif pilihan == '2': 
+            df_urut = df_urut.sort_values(by='Harga', ascending=False)
+        elif pilihan == '3': 
+            df_urut = df_urut.sort_values(by='Stok', ascending=True)
+        elif pilihan == '4': 
+            df_urut = df_urut.sort_values(by='Stok', ascending=False)
+        elif pilihan == '5': 
+            df_urut = df_urut.sort_values(by='DosisNumerik', ascending=True)
+        elif pilihan == '6': 
+            df_urut = df_urut.sort_values(by='DosisNumerik', ascending=False)
         elif pilihan == '0': break
         else: print("Pilihan tidak valid!"); time.sleep(1)
 
@@ -294,10 +309,14 @@ def cari_data_obat():
         if pilihan == "4": break
 
         kunci_pencarian, kata_kunci = "", ""
-        if pilihan == "1": kunci_pencarian, kata_kunci = "Nama", input("Masukkan nama obat: ")
-        elif pilihan == "2": kunci_pencarian, kata_kunci = "Kode", input("Masukkan kode obat: ")
-        elif pilihan == "3": kunci_pencarian, kata_kunci = "Kategori", input("Masukkan kategori obat: ")
-        else: print("Pilihan tidak valid!"); time.sleep(2); continue
+        if pilihan == "1": 
+            kunci_pencarian, kata_kunci = "Nama", input("Masukkan nama obat: ")
+        elif pilihan == "2": 
+            kunci_pencarian, kata_kunci = "Kode", input("Masukkan kode obat: ")
+        elif pilihan == "3": 
+            kunci_pencarian, kata_kunci = "Kategori", input("Masukkan kategori obat: ")
+        else: 
+            print("Pilihan tidak valid!"); time.sleep(2); continue
 
         if not kata_kunci.strip(): print("Input pencarian tidak boleh kosong."); time.sleep(2); continue
         
@@ -429,10 +448,14 @@ def kelola_data_obat():
                     df_tampil['Harga'] = harga_terformat
                 print("\n" + tabulate(df_tampil, headers="keys", tablefmt="fancy_grid", showindex=False))
             input("\nTekan Enter untuk kembali...")
-        elif pilihan == "2": perbarui_data_obat(data_obat_df)
-        elif pilihan == "3": hapus_data_obat(data_obat_df)
-        elif pilihan == "4": break
-        else: print("Pilihan tidak valid!"); time.sleep(2)
+        elif pilihan == "2": 
+            perbarui_data_obat(data_obat_df)
+        elif pilihan == "3": 
+            hapus_data_obat(data_obat_df)
+        elif pilihan == "4": 
+            break
+        else: 
+            print("Pilihan tidak valid!"); time.sleep(2)
 
 def perbarui_data_obat(data_obat_df):
     """Menangani proses pembaruan data obat."""
