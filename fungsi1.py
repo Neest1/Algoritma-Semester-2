@@ -2,6 +2,7 @@ import pandas as pd
 import time
 import os
 import math
+import re
 from datetime import datetime
 from halo import Halo
 from tabulate import tabulate
