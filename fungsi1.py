@@ -285,8 +285,10 @@ def menu_pengurutan_hasil_pencarian(df_hasil: pd.DataFrame):
             df_urut = df_urut.sort_values(by='DosisNumerik', ascending=True)
         elif pilihan == '6': 
             df_urut = df_urut.sort_values(by='DosisNumerik', ascending=False)
-        elif pilihan == '0': break
-        else: print("Pilihan tidak valid!"); time.sleep(1)
+        elif pilihan == '0': 
+            break
+        else: 
+            print("Pilihan tidak valid!"); time.sleep(1)
 
 # --- FUNGSI UTAMA YANG DIMODIFIKASI ---
 def cari_data_obat():
