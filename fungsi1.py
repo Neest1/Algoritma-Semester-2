@@ -153,7 +153,7 @@ def urutkan_data_obat():
     while True:
         bersihkan_layar()
         kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
-        data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+        data_obat_df = muat_data_csv("database_obat.csv", kolom_obat)
         if data_obat_df.empty:
             print("Data obat kosong, tidak ada yang bisa diurutkan."); input("\nTekan Enter..."); break
             
@@ -222,7 +222,7 @@ def cari_data_obat():
     while True:
         bersihkan_layar()
         kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
-        data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+        data_obat_df = muat_data_csv("database_obat.csv", kolom_obat)
         
         print("╔═══════════════════════════════════╗")
         print("║         Menu Pencarian Obat       ║")
@@ -270,7 +270,7 @@ def urutkan_data_obat():
     while True:
         bersihkan_layar()
         kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
-        data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+        data_obat_df = muat_data_csv("database_obat.csv", kolom_obat)
         if data_obat_df.empty:
             print("Data obat kosong, tidak ada yang bisa diurutkan."); input("\nTekan Enter..."); break
             
@@ -309,7 +309,7 @@ def tambah_data_obat():
     """Menangani penambahan data obat baru."""
     bersihkan_layar()
     kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
-    data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+    data_obat_df = muat_data_csv("database_obat.csv", kolom_obat)
     
     print("\n--- Masukkan Data Obat Baru ---")
     
@@ -359,7 +359,7 @@ def tambah_data_obat():
     df_baru = pd.DataFrame([data_baru])
 
     data_obat_df = pd.concat([data_obat_df, df_baru], ignore_index=True)
-    data_obat_df.to_csv("data_obat.csv", index=False)
+    data_obat_df.to_csv("database_obat.csv", index=False)
     
     bersihkan_layar()
     print("\n--- Data obat berhasil disimpan ---")
@@ -371,7 +371,7 @@ def kelola_data_obat():
     while True:
         bersihkan_layar()
         kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
-        data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+        data_obat_df = muat_data_csv("database_obat.csv", kolom_obat)
         
         print("╔═══════════════════════════════════╗")
         print("║         Menu Kelola Obat          ║")
@@ -431,7 +431,7 @@ def perbarui_data_obat(data_obat_df):
         print("Input tidak valid untuk Stok atau Harga. Perubahan dibatalkan."); time.sleep(2); return
 
     data_obat_df.loc[indeks_target, kolom_untuk_diperbarui] = nilai_baru
-    data_obat_df.to_csv("data_obat.csv", index=False)
+    data_obat_df.to_csv("database_obat.csv", index=False)
     
     bersihkan_layar()
     print(f"\nData {kolom_untuk_diperbarui} untuk kode {kode_target} berhasil diperbarui.")
@@ -454,7 +454,7 @@ def hapus_data_obat(data_obat_df):
     konfirmasi = input(f"Yakin ingin menghapus obat '{baris_target.iloc[0]['Nama']}'? (y/n): ").lower().strip()
     if konfirmasi == 'y':
         data_obat_df = data_obat_df[data_obat_df['Kode'].str.upper() != kode_target]
-        data_obat_df.to_csv("data_obat.csv", index=False)
+        data_obat_df.to_csv("database_obat.csv", index=False)
         print("Data berhasil dihapus.")
         animasi_memuat(1)
     else:
@@ -476,7 +476,7 @@ def buat_kode_transaksi():
 def lakukan_pembelian():
     """Menangani logika untuk transaksi pembelian obat."""
     kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
-    data_obat_df = muat_data_csv("data_obat.csv", kolom_obat)
+    data_obat_df = muat_data_csv("database_obat.csv", kolom_obat)
     if data_obat_df.empty:
         bersihkan_layar(); print("Data obat kosong."); input("\nTekan Enter..."); return
 
@@ -524,7 +524,7 @@ def lakukan_pembelian():
         konfirmasi = input("Lanjutkan pembayaran? (y/n): ").lower().strip()
         if konfirmasi == 'y':
             data_obat_df.loc[data_obat_df['Kode'].str.upper() == kode_target, 'Stok'] -= jumlah_beli
-            data_obat_df.to_csv("data_obat.csv", index=False)
+            data_obat_df.to_csv("database_obat.csv", index=False)
             
             kolom_riwayat = ["Kode Transaksi", "Tanggal Transaksi", "Nama Pembeli", "Kode Obat", "Nama Obat", "Jumlah", "Harga Satuan", "Total Harga"]
             df_riwayat = muat_data_csv("riwayat_transaksi.csv", kolom_riwayat)
@@ -561,8 +561,8 @@ def lihat_riwayat_transaksi():
 if __name__ == '__main__':
     """Fungsi utama yang akan dijalankan saat script dieksekusi."""
     kolom_obat = ["Kode", "Nama", "Kategori", "Stok", "Harga", "Kadaluarsa", "Deskripsi"]
-    if not os.path.exists("data_obat.csv"):
-        muat_data_csv("data_obat.csv", kolom_obat)
+    if not os.path.exists("database_obat.csv"):
+        muat_data_csv("database_obat.csv", kolom_obat)
 
     kolom_riwayat = ["Kode Transaksi", "Tanggal Transaksi", "Nama Pembeli", "Kode Obat", "Nama Obat", "Jumlah", "Harga Satuan", "Total Harga"]
     if not os.path.exists("riwayat_transaksi.csv"):
