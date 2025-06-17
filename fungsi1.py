@@ -89,7 +89,7 @@ def menu_admin():
     while True:
         bersihkan_layar()
         print("╔═══════════════════════════════════════╗")
-        print("║             Menu Admin              ║")
+        print("║               Menu Admin              ║")
         print("╠═══════════════════════════════════════╣")
         print("║  [1] Tambah Data Obat                 ║")
         print("║  [2] Kelola Data Obat                 ║")
