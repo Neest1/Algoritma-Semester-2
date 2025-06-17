@@ -86,7 +86,7 @@ def menu_admin():
     while True:
         bersihkan_layar()
         print("╔═══════════════════════════════════════╗")
-        print("║             Menu Admin              ║")
+        print("║             Menu Admin                ║")
         print("╠═══════════════════════════════════════╣")
         print("║  [1] Tambah Data Obat                 ║")
         print("║  [2] Kelola Data Obat                 ║")
@@ -133,7 +133,7 @@ def cari_lompat(daftar_data: List[dict], target: str, kunci: str) -> int:
         
     return -1
 
-def urutkan_cepat(data_list, key, ascending=True):
+def urutkan_cepat(data_list : List[dict], key: str, ascending: bool =True): -> List[dict]:
     if len(data_list) <= 1:
         return data_list
 
